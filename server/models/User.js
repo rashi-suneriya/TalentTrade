@@ -44,6 +44,12 @@ const userSchema = new mongoose.Schema({
     linkedin: String,
     website: String
   },
+  reviews: [{
+    reviewer: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    rating: { type: Number, min: 1, max: 5 },
+    comment: String,
+    createdAt: { type: Date, default: Date.now }
+  }],
   isActive: { type: Boolean, default: true },
   lastSeen: Date,
   createdAt: { type: Date, default: Date.now }

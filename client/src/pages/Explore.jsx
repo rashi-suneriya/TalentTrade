@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import api from '../api/axios';
-import { Search, Filter, Star, Clock, User, ChevronDown } from 'lucide-react';
+import { Search, Filter, Star, Clock, User, ChevronDown, BookOpen } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Explore = () => {
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -113,7 +115,7 @@ const Explore = () => {
             <div className="card bg-indigo-600 text-white border-none text-center">
               <h3 className="font-bold mb-2">Want to Teach?</h3>
               <p className="text-xs text-indigo-100 mb-4">Share your knowledge and earn SkillTokens.</p>
-              <Button className="w-full bg-white text-indigo-600 h-9 text-xs">Create Course</Button>
+              <Button className="w-full bg-white text-indigo-600 h-9 text-xs" onClick={() => navigate('/become-teacher')}>Create Course</Button>
             </div>
           </aside>
 
@@ -147,14 +149,21 @@ const Explore = () => {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: i * 0.05 }}
+                      onClick={() => navigate(`/learn/${course._id}`)}
                       className="card p-0 overflow-hidden group cursor-pointer border-transparent hover:border-indigo-500 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10"
                     >
                       <div className="aspect-video relative overflow-hidden">
-                        <img 
-                          src={course.thumbnail} 
-                          alt={course.title} 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
+                        {course.thumbnail ? (
+                          <img 
+                            src={course.thumbnail} 
+                            alt={course.title} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                            <BookOpen className="w-10 h-10 text-slate-300" />
+                          </div>
+                        )}
                         <div className="absolute top-3 left-3 px-3 py-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg text-[10px] font-bold uppercase tracking-wider text-indigo-600 shadow-sm">
                           {course.category}
                         </div>
@@ -162,8 +171,12 @@ const Explore = () => {
                       
                       <div className="p-5">
                         <div className="flex items-center gap-2 mb-3">
-                          <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                            <img src={course.teacher.avatar} alt="" className="w-full h-full object-cover" />
+                          <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden flex items-center justify-center">
+                            {course.teacher.avatar ? (
+                              <img src={course.teacher.avatar} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <User className="w-3.5 h-3.5 text-slate-400" />
+                            )}
                           </div>
                           <span className="text-xs font-medium text-slate-500">{course.teacher.name}</span>
                         </div>

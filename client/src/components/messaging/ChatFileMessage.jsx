@@ -20,11 +20,17 @@ const ChatFileMessage = ({ attachment, isSender }) => {
           rel="noopener noreferrer"
           className="block overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm transition-transform active:scale-95"
         >
-          <img 
-            src={attachment.url} 
-            alt={attachment.name} 
-            className="max-w-[240px] max-h-[320px] object-cover hover:opacity-90 transition-opacity"
-          />
+          {attachment.url ? (
+            <img 
+              src={attachment.url} 
+              alt={attachment.name} 
+              className="max-w-[240px] max-h-[320px] object-cover hover:opacity-90 transition-opacity"
+            />
+          ) : (
+            <div className="w-[240px] h-[240px] flex items-center justify-center bg-slate-100 dark:bg-slate-800">
+              <ImageIcon className="w-10 h-10 text-slate-300" />
+            </div>
+          )}
         </a>
         <div className={`absolute bottom-2 ${isSender ? 'left-2' : 'right-2'} opacity-0 group-hover:opacity-100 transition-opacity`}>
           <div className="bg-black/50 backdrop-blur-md text-[10px] text-white px-2 py-1 rounded-lg font-bold">

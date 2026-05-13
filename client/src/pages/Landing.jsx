@@ -29,7 +29,7 @@ const Landing = () => {
               </span>
             </h1>
             <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-              SkillSwap is the world's first peer-to-peer learning ecosystem. Exchange your expertise for knowledge, learn from pros, and level up with AI tutors.
+              TalentTrade is the world's first peer-to-peer learning ecosystem. Exchange your expertise for knowledge, learn from pros, and level up with AI tutors.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/register">
@@ -74,7 +74,7 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-              Why Choose SkillSwap?
+              Why Choose TalentTrade?
             </h2>
             <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
               Everything you need to master new skills and share yours with the world.
@@ -136,7 +136,7 @@ const Landing = () => {
       </section>
       
       <footer className="py-12 border-t border-slate-100 dark:border-slate-800 text-center text-slate-500 dark:text-slate-400 text-sm">
-        <p>© 2024 SkillSwap Platform. All rights reserved.</p>
+        <p>© 2024 TalentTrade Platform. All rights reserved.</p>
       </footer>
     </div>
   );

@@ -88,7 +88,6 @@ exports.getCourse = async (req, res) => {
 exports.updateCourse = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
-
     if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
@@ -97,10 +96,22 @@ exports.updateCourse = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
-    const updatedCourse = await Course.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
+    console.log('Incoming Curriculum Sample:', JSON.stringify(req.body.curriculum?.[0]?.lessons?.[0], null, 2));
+
+    // Manually update fields to ensure Mongoose detects changes in nested arrays
+    if (req.body.curriculum) {
+      course.curriculum = req.body.curriculum;
+    }
+    
+    // Update other fields
+    Object.keys(req.body).forEach(key => {
+      if (key !== 'curriculum') {
+        course[key] = req.body[key];
+      }
     });
+
+    const updatedCourse = await course.save();
+    console.log('Course saved successfully. First lesson videoUrl:', updatedCourse.curriculum?.[0]?.lessons?.[0]?.videoUrl);
 
     res.json({ success: true, course: updatedCourse });
   } catch (error) {
@@ -119,10 +130,15 @@ exports.publishCourse = async (req, res) => {
     if (course.teacher.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Not authorized' });
 
     // Validate required fields before publishing
-    if (!course.description || !course.thumbnail || !course.category) {
+    const missingFields = [];
+    if (!course.description) missingFields.push('description');
+    if (!course.thumbnail) missingFields.push('thumbnail');
+    if (!course.category) missingFields.push('category');
+
+    if (missingFields.length > 0) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Please fill in description, thumbnail, and category before publishing.' 
+        message: `Missing required fields: ${missingFields.join(', ')}. Please fill them before publishing.` 
       });
     }
 

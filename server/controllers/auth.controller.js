@@ -36,7 +36,7 @@ exports.register = async (req, res) => {
       try {
         const verifyUrl = `${process.env.CLIENT_URL}/verify/${verifyToken}`;
         const html = `
-          <h1>Verify your SkillSwap account</h1>
+          <h1>Verify your TalentTrade account</h1>
           <p>Hi ${name},</p>
           <p>Please click the link below to verify your email:</p>
           <a href="${verifyUrl}">Verify Email</a>
@@ -44,7 +44,7 @@ exports.register = async (req, res) => {
 
         await sendEmail({
           email: user.email,
-          subject: 'Verify your SkillSwap account',
+          subject: 'Verify your TalentTrade account',
           html
         });
       } catch (emailError) {
@@ -217,15 +217,15 @@ exports.becomeTeacher = async (req, res) => {
     if (process.env.NODE_ENV === 'production' || (process.env.EMAIL_USER && process.env.EMAIL_USER !== 'your@gmail.com')) {
       try {
         const html = `
-          <h1>Welcome to SkillSwap Teaching!</h1>
+          <h1>Welcome to TalentTrade Teaching!</h1>
           <p>Hi ${user.name},</p>
-          <p>You are now a registered teacher on SkillSwap. You can start creating courses and sharing your knowledge.</p>
+          <p>You are now a registered teacher on TalentTrade. You can start creating courses and sharing your knowledge.</p>
           <a href="${process.env.CLIENT_URL}/teach/dashboard">Go to Teacher Dashboard</a>
         `;
 
         await sendEmail({
           email: user.email,
-          subject: 'Welcome to SkillSwap Teaching!',
+          subject: 'Welcome to TalentTrade Teaching!',
           html
         });
       } catch (emailError) {

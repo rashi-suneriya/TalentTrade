@@ -10,6 +10,7 @@ import {
   List, Paperclip, HelpCircle, Video, ExternalLink, Calendar
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactPlayer from 'react-player';
 
 // ── Live Session Banner ────────────────────────────────────────────────
 const LiveSessionBanner = ({ session }) => {
@@ -166,6 +167,7 @@ const LearnPage = () => {
   const [currentLesson, setCurrentLesson] = useState(null);
   const [activeTab, setActiveTab] = useState('curriculum');
   const [isLoading, setIsLoading] = useState(true);
+  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -173,8 +175,9 @@ const LearnPage = () => {
         const res = await api.get(`/courses/${id}`);
         if (res.data.success) {
           setCourse(res.data.course);
-          if (res.data.course.curriculum.length > 0 && res.data.course.curriculum[0].lessons.length > 0) {
-            setCurrentLesson(res.data.course.curriculum[0].lessons[0]);
+          const firstLesson = res.data.course.curriculum.find(s => s.lessons.length > 0)?.lessons[0];
+          if (firstLesson) {
+            setCurrentLesson(firstLesson);
           }
         }
       } catch (error) {
@@ -190,7 +193,9 @@ const LearnPage = () => {
   if (!course) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Course not found.</div>;
 
   const allLessons = course.curriculum.flatMap(s => s.lessons);
-  const currentIndex = allLessons.findIndex(l => l._id === currentLesson?._id);
+  const currentIndex = allLessons.findIndex(l => (l._id?.toString() || l._id) == (currentLesson?._id?.toString() || currentLesson?._id));
+  
+  console.log('LearnPage Render - Current Lesson:', currentLesson?.title, 'Video URL:', currentLesson?.videoUrl);
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
@@ -202,24 +207,76 @@ const LearnPage = () => {
           {/* Live Session Banner */}
           <LiveSessionBanner session={currentLesson?.liveSession} />
 
-          <div className="aspect-video bg-black sticky top-0 z-10 shadow-2xl">
+          <div className="aspect-video bg-black sticky top-0 z-10 shadow-2xl overflow-hidden">
             {currentLesson?.videoUrl ? (
-              <video
-                key={currentLesson._id}
-                src={currentLesson.videoUrl}
-                controls
-                playsInline
-                className="w-full h-full"
-                style={{ maxHeight: '100%', background: '#000' }}
-                onError={(e) => console.error('Video error:', e.target.error)}
-              >
-                <source src={currentLesson.videoUrl} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
+              <div className="w-full h-full relative">
+                <ReactPlayer
+                  key={`${currentLesson._id}-${currentLesson.videoUrl}`}
+                  url={currentLesson.videoUrl && currentLesson.videoUrl.includes('cloudinary.com') && !currentLesson.videoUrl.match(/\.(mp4|webm|mov|avi)$/i) 
+                    ? `${currentLesson.videoUrl}.mp4` 
+                    : currentLesson.videoUrl}
+                  controls
+                  width="100%"
+                  height="100%"
+                  playing={false}
+                  config={{
+                    file: {
+                      attributes: {
+                        crossOrigin: 'anonymous',
+                        preload: 'auto',
+                        playsInline: true,
+                        style: { objectFit: 'contain', background: '#000' }
+                      }
+                    }
+                  }}
+                  onError={(e) => {
+                    console.error('Video error:', e);
+                    setVideoError(true);
+                  }}
+                  onReady={() => setVideoError(false)}
+                />
+              </div>
+            ) : currentLesson ? (
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 gap-4">
+                <Video className="w-16 h-16 opacity-20" />
+                <p>No video available for this lesson</p>
+              </div>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 gap-4">
                 <Play className="w-16 h-16 opacity-20" />
                 <p>Select a lesson to start learning</p>
+              </div>
+            )}
+            
+            {videoError && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 text-white p-6 text-center z-20">
+                <div className="w-16 h-16 bg-rose-500/20 text-rose-500 rounded-full flex items-center justify-center mb-4">
+                  <Video className="w-8 h-8" />
+                </div>
+                <h3 className="font-bold mb-2">Video Loading Failed</h3>
+                <p className="text-sm text-slate-400 max-w-xs mb-2">We couldn't load the video. This might be due to an invalid URL or browser restriction.</p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <Button 
+                    onClick={() => {
+                      setVideoError(false);
+                      // ReactPlayer handles reload internally if URL stays the same
+                    }}
+                    variant="secondary"
+                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                  >
+                    Try Reloading
+                  </Button>
+                  {currentLesson?.videoUrl && (
+                    <a 
+                      href={currentLesson.videoUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="flex items-center gap-2 bg-white/10 border border-white/20 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-white/20 transition-all"
+                    >
+                      Open Direct Link <ExternalLink className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -296,13 +353,13 @@ const LearnPage = () => {
                             key={lesson._id}
                             onClick={() => { setCurrentLesson(lesson); setActiveTab('curriculum'); }}
                             className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
-                              currentLesson?._id === lesson._id
+                              (currentLesson?._id?.toString() || currentLesson?._id) == (lesson._id?.toString() || lesson._id)
                                 ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600'
                                 : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'
                             }`}
                           >
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                              currentLesson?._id === lesson._id ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800'
+                              (currentLesson?._id?.toString() || currentLesson?._id) == (lesson._id?.toString() || lesson._id) ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800'
                             }`}>
                               {lesson.isCompleted ? <CheckCircle className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                             </div>

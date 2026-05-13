@@ -1,4 +1,5 @@
 const multer = require('multer');
+const path = require('path');
 const { cloudinary } = require('../config/cloudinary');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
@@ -16,15 +17,15 @@ const imageStorage = new CloudinaryStorage({
   }
 });
 
-// Video Storage
-const videoStorage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: async (req, file) => ({
-    folder: 'skillswap/videos',
-    resource_type: 'video',
-    format: 'mp4',          // Always deliver as MP4 so the URL has an extension players can detect
-    transformation: [{ quality: 'auto' }]
-  })
+// Video Storage (Local first for stability)
+const videoDiskStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '..', 'uploads', 'temp'));
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.mimetype.split('/')[1]);
+  }
 });
 
 // Lesson Resources Storage (Raw files like PDF, ZIP)
@@ -46,7 +47,7 @@ const chatFileStorage = new CloudinaryStorage({
 });
 
 const uploadVideo = multer({
-  storage: videoStorage,
+  storage: videoDiskStorage,
   limits: { fileSize: 500 * 1024 * 1024 }, // 500MB
 }).single('file');
 

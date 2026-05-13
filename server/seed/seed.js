@@ -21,7 +21,7 @@ const seedData = async () => {
     // Create Admin
     const admin = await User.create({
       name: 'Admin User',
-      email: 'admin@skillswap.com',
+      email: 'admin@talenttrade.com',
       password,
       role: 'admin',
       isVerified: true,

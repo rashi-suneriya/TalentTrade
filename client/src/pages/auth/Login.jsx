@@ -32,10 +32,10 @@ const Login = () => {
       >
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-3xl">S</span>
+            <span className="text-white font-bold text-3xl">T</span>
           </div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Welcome Back</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2">Log in to your SkillSwap account</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-2">Log in to your TalentTrade account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

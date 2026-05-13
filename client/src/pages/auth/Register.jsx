@@ -52,7 +52,7 @@ const Register = () => {
         className="max-w-lg w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl p-8 border border-slate-100 dark:border-slate-800"
       >
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Join SkillSwap</h1>
+          <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Join TalentTrade</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-2">Start swapping skills and growing together</p>
         </div>
 

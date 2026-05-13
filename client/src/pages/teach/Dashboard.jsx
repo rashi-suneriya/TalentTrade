@@ -195,7 +195,13 @@ const Dashboard = () => {
                   <tr key={course._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all border-b border-slate-50 dark:border-slate-800/50 last:border-none">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
-                        <img src={course.thumbnail} className="w-16 h-10 object-cover rounded-lg shadow-sm" alt="" />
+                        {course.thumbnail ? (
+                          <img src={course.thumbnail} className="w-16 h-10 object-cover rounded-lg shadow-sm" alt="" />
+                        ) : (
+                          <div className="w-16 h-10 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                            <BookOpen className="w-5 h-5 text-slate-400" />
+                          </div>
+                        )}
                         <div className="max-w-[200px]">
                           <div className="text-sm font-bold text-slate-800 dark:text-white truncate">{course.title}</div>
                           <div className="text-[10px] text-slate-400 font-bold uppercase">{course.category}</div>

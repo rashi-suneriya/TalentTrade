@@ -25,6 +25,7 @@ import {
   Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactPlayer from 'react-player';
 import api from '../../api/axios';
 import { toast } from 'react-hot-toast';
 import DatePicker from "react-datepicker";
@@ -148,17 +149,25 @@ const CreateCourse = () => {
   };
 
   const updateLesson = (sIdx, lIdx, data) => {
-    const newCurriculum = [...courseData.curriculum];
-    newCurriculum[sIdx].lessons[lIdx] = { ...newCurriculum[sIdx].lessons[lIdx], ...data };
-    setCourseData({ ...courseData, curriculum: newCurriculum });
+    console.log(`Updating Lesson [S:${sIdx}, L:${lIdx}]:`, data);
+    setCourseData(prev => {
+      const next = { ...prev };
+      const newCurriculum = [...prev.curriculum];
+      const newLessons = [...newCurriculum[sIdx].lessons];
+      newLessons[lIdx] = { ...newLessons[lIdx], ...data };
+      newCurriculum[sIdx] = { ...newCurriculum[sIdx], lessons: newLessons };
+      next.curriculum = newCurriculum;
+      return next;
+    });
   };
 
-  const handleSaveDraft = async () => {
+  const handleSaveDraft = async (dataToSave = courseData) => {
     setIsLoading(true);
     try {
-      const url = courseData._id ? `/courses/${courseData._id}` : '/courses';
-      const method = courseData._id ? 'put' : 'post';
-      const res = await api[method](url, courseData);
+      const url = dataToSave._id ? `/courses/${dataToSave._id}` : '/courses';
+      const method = dataToSave._id ? 'put' : 'post';
+      console.log('Sending Save Request:', { url, method, dataToSave });
+      const res = await api[method](url, dataToSave);
       
       if (res.data.success) {
         setCourseData(res.data.course);
@@ -177,7 +186,7 @@ const CreateCourse = () => {
     if (step === 2) {
       const saved = await handleSaveDraft();
       if (saved) setStep(step + 1);
-    } else if (step === 3) {
+    } else if (step === 1 || step === 3) {
       const saved = await handleSaveDraft();
       if (saved) setStep(step + 1);
     } else {
@@ -196,7 +205,8 @@ const CreateCourse = () => {
         navigate(`/learn/${courseData._id}`);
       }
     } catch (error) {
-      toast.error('Failed to publish');
+      console.error('Publish error:', error);
+      toast.error(error.response?.data?.message || 'Failed to publish');
     } finally {
       setIsLoading(false);
     }
@@ -405,11 +415,43 @@ return (
     {activeTab === 'content' && (
       <div className="space-y-6">
         <textarea className="input min-h-[100px]" placeholder="Lesson summary..." value={lesson.description} onChange={(e) => updateLesson(sIdx, lIdx, { description: e.target.value })} />
+        
+        {lesson.videoUrl && (
+          <div className="aspect-video w-full max-w-md bg-black rounded-2xl overflow-hidden shadow-lg mb-4">
+            <ReactPlayer 
+              url={lesson.videoUrl.includes('cloudinary.com') && !lesson.videoUrl.match(/\.(mp4|webm|mov|avi)$/i) ? `${lesson.videoUrl}.mp4` : lesson.videoUrl} 
+              width="100%" 
+              height="100%" 
+              controls 
+            />
+          </div>
+        )}
+
         <FileUpload 
           uploadUrl="/upload/video" 
           accept={['video/mp4', 'video/webm', 'video/quicktime']}
-          label="Lesson Video" 
-          onUpload={(data) => updateLesson(sIdx, lIdx, { videoUrl: data.url, publicId: data.publicId })} 
+          label={lesson.videoUrl ? "Replace Lesson Video" : "Upload Lesson Video"} 
+          onUpload={(data) => {
+            if (!data.url) {
+              toast.error('Upload succeeded but no URL returned. Check Cloudinary config.');
+              return;
+            }
+            
+            setCourseData(current => {
+              const next = { ...current };
+              const newCurriculum = [...current.curriculum];
+              const newLessons = [...newCurriculum[sIdx].lessons];
+              newLessons[lIdx] = { ...newLessons[lIdx], videoUrl: data.url, publicId: data.publicId };
+              newCurriculum[sIdx] = { ...newCurriculum[sIdx], lessons: newLessons };
+              next.curriculum = newCurriculum;
+              
+              // Trigger immediate save to backend
+              handleSaveDraft(next);
+              return next;
+            });
+            
+            toast.success('Video uploaded and auto-saved!');
+          }} 
         />
       </div>
     )}

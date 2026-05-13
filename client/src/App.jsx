@@ -11,6 +11,8 @@ import Dashboard from './pages/Dashboard';
 import Explore from './pages/Explore';
 import LearnPage from './pages/LearnPage';
 import Profile from './pages/Profile';
+import PublicProfile from './pages/PublicProfile';
+import ExploreSkills from './pages/ExploreSkills';
 import SwapsDashboard from './pages/swaps/SwapsDashboard';
 import Messages from './pages/Messages';
 import CreateCourse from './pages/teach/CreateCourse';
@@ -42,8 +44,10 @@ function App() {
         {/* Learner Protected Routes */}
         <Route path="/dashboard" element={isLoggedIn ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/explore" element={<Explore />} />
+        <Route path="/explore/skills" element={<ExploreSkills />} />
         <Route path="/learn/:id" element={isLoggedIn ? <LearnPage /> : <Navigate to="/login" />} />
         <Route path="/profile" element={isLoggedIn ? <Profile /> : <Navigate to="/login" />} />
+        <Route path="/profile/:id" element={<PublicProfile />} />
         <Route path="/swaps" element={isLoggedIn ? <SwapsDashboard /> : <Navigate to="/login" />} />
         <Route path="/messages" element={isLoggedIn ? <Messages /> : <Navigate to="/login" />} />
 

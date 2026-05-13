@@ -1,6 +1,6 @@
-# SkillSwap — Peer-to-Peer Learning & Skill Exchange
+# TalentTrade — Peer-to-Peer Learning & Skill Exchange
 
-SkillSwap is a production-ready full-stack web application designed for people to exchange skills, enroll in video courses, and learn with the help of an AI Tutor.
+TalentTrade is a production-ready full-stack web application designed for people to exchange skills, enroll in video courses, and learn with the help of an AI Tutor.
 
 ## ✨ Features
 
@@ -40,7 +40,7 @@ SkillSwap is a production-ready full-stack web application designed for people t
 1. **Clone the repository:**
    ```bash
    git clone <repo-url>
-   cd skillswap
+   cd talenttrade
    ```
 
 2. **Setup Backend:**

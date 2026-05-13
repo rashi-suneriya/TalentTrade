@@ -8,20 +8,33 @@ const { getIO } = require('../socket');
 // @access  Private
 exports.proposeSwap = async (req, res) => {
   try {
-    const { receiver, skillOffered, skillWanted, message } = req.body;
+    const { receiver: receiverId, skillOffered, skillWanted, message } = req.body;
 
-    if (receiver === req.user._id.toString()) {
-      return res.status(400).json({ message: 'Cannot swap with yourself' });
+    if (!receiverId) {
+      return res.status(400).json({ success: false, message: 'Receiver ID is required' });
+    }
+
+    if (receiverId === req.user._id.toString()) {
+      return res.status(400).json({ success: false, message: 'Cannot swap with yourself' });
+    }
+
+    const receiverUser = await User.findById(receiverId);
+    if (!receiverUser) {
+      return res.status(404).json({ success: false, message: 'Receiver not found' });
     }
 
     const existingSwap = await Swap.findOne({
       sender: req.user._id,
-      receiver,
+      receiver: receiverId,
       status: { $in: ['pending', 'active'] }
     });
 
     if (existingSwap) {
-      return res.status(400).json({ message: 'A pending/active swap already exists' });
+      return res.status(400).json({ success: false, message: 'A pending/active swap already exists with this user' });
+    }
+
+    if (!skillOffered?.title || !skillWanted?.title) {
+      return res.status(400).json({ success: false, message: 'Both skills (offered and wanted) must have a title' });
     }
 
     const expiresAt = new Date();
@@ -29,16 +42,24 @@ exports.proposeSwap = async (req, res) => {
 
     const swap = await Swap.create({
       sender: req.user._id,
-      receiver,
-      skillOffered,
-      skillWanted,
+      receiver: receiverId,
+      skillOffered: {
+        title: skillOffered.title,
+        level: skillOffered.level,
+        category: skillOffered.category
+      },
+      skillWanted: {
+        title: skillWanted.title,
+        level: skillWanted.level,
+        category: skillWanted.category
+      },
       message,
       expiresAt
     });
 
     // Create Notification
     const notification = await Notification.create({
-      user: receiver,
+      user: receiverId,
       type: 'swap_request',
       title: 'New Swap Request',
       body: `${req.user.name} wants to swap skills with you!`,
@@ -46,12 +67,18 @@ exports.proposeSwap = async (req, res) => {
     });
 
     // Emit socket event
-    const io = getIO();
-    io.to(receiver).emit('notification:new', notification);
-    io.to(receiver).emit('swap:requested', { swap, fromUser: req.user });
+    try {
+      const io = getIO();
+      io.to(receiverId).emit('notification:new', notification);
+      io.to(receiverId).emit('swap:requested', { swap, fromUser: req.user });
+    } catch (ioError) {
+      console.error('Socket notification failed:', ioError.message);
+      // Don't fail the whole request if only socket notification fails
+    }
 
     res.status(201).json({ success: true, swap });
   } catch (error) {
+    console.error('Propose Swap Error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

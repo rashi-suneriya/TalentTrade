@@ -70,7 +70,10 @@ exports.getUsers = async (req, res) => {
   const filter = { isActive: true };
 
   if (query) {
-    filter.name = { $regex: query, $options: 'i' };
+    filter.$or = [
+      { name: { $regex: query, $options: 'i' } },
+      { 'skillsOffered.title': { $regex: query, $options: 'i' } }
+    ];
   }
 
   if (skill) {
@@ -82,8 +85,25 @@ exports.getUsers = async (req, res) => {
   }
 
   try {
-    const users = await User.find(filter).select('name avatar bio role skillsOffered averageRating totalSwaps');
+    const users = await User.find(filter).select('_id name avatar bio role skillsOffered skillsWanted averageRating totalSwaps');
     res.json({ success: true, count: users.length, users });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+// @desc    Get public user profile
+// @route   GET /api/users/:id/public
+// @access  Public
+exports.getPublicProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .select('name avatar bio role skillsOffered skillsWanted averageRating totalRatings totalSwaps createdAt reviews')
+      .populate('reviews.reviewer', 'name avatar');
+      
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    res.json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

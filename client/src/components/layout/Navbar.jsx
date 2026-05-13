@@ -15,15 +15,16 @@ const Navbar = () => {
         <div className="flex items-center gap-8">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-2xl">S</span>
+              <span className="text-white font-bold text-2xl">T</span>
             </div>
             <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-indigo-400 hidden sm:block">
-              SkillSwap
+              TalentTrade
             </span>
           </Link>
 
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-400">
-            <Link to="/explore" className="hover:text-indigo-600 transition-colors">Explore</Link>
+            <Link to="/explore" className="hover:text-indigo-600 transition-colors">Explore Courses</Link>
+            <Link to="/explore/skills" className="hover:text-indigo-600 transition-colors">Discover Skills</Link>
             <Link to="/swaps" className="hover:text-indigo-600 transition-colors">Swaps</Link>
             {isLoggedIn && user?.role === 'teacher' && (
               <Link to="/teach/create-course" className="hover:text-indigo-600 transition-colors">Create Course</Link>
